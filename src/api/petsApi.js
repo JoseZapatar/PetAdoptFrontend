@@ -1,7 +1,7 @@
 import { axiosClient } from "./axiosClient";
 
 export const petsApi = {
-  getAll: () => axiosClient.get("/Pets"),
+  getAll: (params) => axiosClient.get("/Pets", { params }),
   getById: (id) => axiosClient.get(`/Pets/${id}`),
   create: (data) => axiosClient.post("/Pets", data),
   update: (id, data) => axiosClient.put(`/Pets/${id}`, data),

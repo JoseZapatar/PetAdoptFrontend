@@ -8,6 +8,7 @@ import Navbar from "../../components/layout/Navbar";
 export default function Login() {
   const navigate = useNavigate();
   const loginStore = useAuthStore((state) => state.login);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [form, setForm] = useState({
     email: "",
@@ -23,8 +24,12 @@ export default function Login() {
       loginStore({ token, user });
       navigate("/");
     },
-    onError: () => {
-      alert("Credenciales incorrectas");
+    onError: (error) => {
+      setErrorMessage(
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Error al iniciar sesión. Verifica tus credenciales."
+      );
     },
   });
 
@@ -73,6 +78,9 @@ export default function Login() {
             {mutation.isPending ? "Ingresando..." : "Ingresar"}
           </button>
 
+          <p className="mt-4 text-center text-sm text-red-500">
+            {errorMessage}
+          </p>
           <p className="mt-5 text-center text-sm text-gray-500">
             ¿No tienes cuenta?{" "}
             <Link to="/register" className="font-semibold text-purple-600">

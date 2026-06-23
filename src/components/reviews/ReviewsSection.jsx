@@ -7,6 +7,8 @@ import { useAuthStore } from "../../store/authStore";
 export default function ReviewsSection({ petId }) {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const [adoptionMessage, setAdoptionMessage] = useState("");
+  const [messageModal, setMessageModal] = useState(false);
 
   const [form, setForm] = useState({
     rating: 5,
@@ -39,11 +41,12 @@ export default function ReviewsSection({ petId }) {
         queryKey: ["reviews", petId],
       });
 
-      alert("Valoración enviada correctamente.");
+      setAdoptionMessage("Valoración enviada correctamente.");
     },
 
     onError: (error) => {
-      alert(error.response?.data || "Error enviando valoración.");
+      setAdoptionMessage("Error enviando valoración. Debes ser un usuario registrado y haber adoptado la mascota.");
+      setMessageModal(true);
     },
   });
 
@@ -51,12 +54,12 @@ export default function ReviewsSection({ petId }) {
     e.preventDefault();
 
     if (!user) {
-      alert("Debes iniciar sesión para valorar.");
+      setAdoptionMessage("Debes iniciar sesión para valorar.");
       return;
     }
 
     if (!form.comment.trim()) {
-      alert("Escribe un comentario.");
+      setAdoptionMessage("Escribe un comentario.");
       return;
     }
 
@@ -134,6 +137,20 @@ export default function ReviewsSection({ petId }) {
           {createMutation.isPending ? "Enviando..." : "Enviar valoración"}
         </button>
       </form>
+
+      {messageModal && (
+          <div className="fixed flex inset-0 items-center justify-center bg-opacity-40">
+          <div className="rounded-2xl bg-white p-8 shadow-lg">
+            <h3 className="text-lg font-bold text-gray-900">Mensaje</h3>
+            <p className="mt-4 text-gray-500">
+              {adoptionMessage}
+            </p>
+            <button
+              onClick={() => setMessageModal(false)}
+              className="mt-4 rounded-xl bg-purple-600 px-5 py-3 font-semibold text-white hover:bg-purple-700">cerrar</button>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 space-y-4">
         {data?.length === 0 ? (

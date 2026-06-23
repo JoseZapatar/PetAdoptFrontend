@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import Navbar from "../../components/layout/Navbar";
 import { authApi } from "../../api/authApi";
 import { useAuthStore } from "../../store/authStore";
@@ -13,6 +16,7 @@ export default function Register() {
     name: "",
     email: "",
     password: "",
+    accountType: "adoptar",
     phone: "",
     address: "",
     city: "",
@@ -28,29 +32,42 @@ export default function Register() {
         user: res.data.user,
       });
 
+      const role = res.data.user?.roleName?.toLowerCase();
+
+      if (role === "publicador") {
+        navigate("/publisher/pets");
+        return;
+      }
+
       navigate("/pets");
     },
     onError: (error) => {
-      alert(error.response?.data || "Error registrando usuario.");
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Error registrando usuario.";
+
+      toast.error(message);
     },
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
 
-    setForm({
-      ...form,
+    setForm((current) => ({
+      ...current,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
     mutation.mutate({
       name: form.name,
       email: form.email,
       password: form.password,
+      accountType: form.accountType,
       phone: form.phone,
       address: form.address,
       city: form.city,
@@ -59,9 +76,12 @@ export default function Register() {
     });
   };
 
+  const isAdopter = form.accountType === "adoptar";
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
+      <ToastContainer position="top-right" autoClose={2500} />
 
       <main className="mx-auto flex max-w-2xl items-center px-6 py-12">
         <form
@@ -73,10 +93,78 @@ export default function Register() {
           </h1>
 
           <p className="mt-2 text-center text-gray-500">
-            Regístrate para enviar solicitudes de adopción.
+            Regístrate para adoptar o dar una mascota en adopción.
           </p>
 
           <div className="mt-8 grid gap-4">
+            <div>
+              <p className="mb-3 font-semibold text-gray-700">
+                ¿Qué quieres hacer?
+              </p>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <label
+                  className={`cursor-pointer rounded-2xl border p-4 ${
+                    form.accountType === "adoptar"
+                      ? "border-purple-600 bg-purple-50"
+                      : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="accountType"
+                      value="adoptar"
+                      checked={form.accountType === "adoptar"}
+                      onChange={handleChange}
+                      className="mt-1"
+                    />
+
+                    <div>
+                      <span className="block font-bold text-gray-900">
+                        Quiero adoptar
+                      </span>
+                      <span className="mt-1 block text-sm text-gray-500">
+                        Se creará tu cuenta como adoptante.
+                      </span>
+                    </div>
+                  </div>
+                </label>
+
+                <label
+                  className={`cursor-pointer rounded-2xl border p-4 ${
+                    form.accountType === "dar"
+                      ? "border-purple-600 bg-purple-50"
+                      : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="accountType"
+                      value="dar"
+                      checked={form.accountType === "dar"}
+                      onChange={handleChange}
+                      className="mt-1"
+                    />
+
+                    <div>
+                      <span className="block font-bold text-gray-900">
+                        Quiero dar en adopción
+                      </span>
+                      <span className="mt-1 block text-sm text-gray-500">
+                        Se creará tu cuenta como publicador.
+                      </span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <p className="mt-2 text-sm font-semibold text-purple-700">
+                Selección actual: {isAdopter ? "Adoptante" : "Publicador"}
+              </p>
+            </div>
+
             <input
               name="name"
               value={form.name}
@@ -104,54 +192,66 @@ export default function Register() {
               placeholder="Contraseña"
               className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
               required
+              minLength={6}
             />
 
-            <input
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="Teléfono"
-              className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
-            />
+            {isAdopter && (
+              <>
+                <input
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="Teléfono"
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
+                />
 
-            <input
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Dirección"
-              className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
-            />
+                <input
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Dirección"
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
+                />
 
-            <input
-              name="city"
-              value={form.city}
-              onChange={handleChange}
-              placeholder="Ciudad"
-              className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
-            />
+                <input
+                  name="city"
+                  value={form.city}
+                  onChange={handleChange}
+                  placeholder="Ciudad"
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
+                />
 
-            <select
-              name="housingType"
-              value={form.housingType}
-              onChange={handleChange}
-              className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
-            >
-              <option value="casa">Casa</option>
-              <option value="apartamento">Apartamento</option>
-              <option value="otro">Otro</option>
-            </select>
+                <select
+                  name="housingType"
+                  value={form.housingType}
+                  onChange={handleChange}
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-purple-500"
+                >
+                  <option value="casa">Casa</option>
+                  <option value="apartamento">Apartamento</option>
+                  <option value="otro">Otro</option>
+                </select>
 
-            <label className="flex items-center gap-2 text-gray-600">
-              <input
-                type="checkbox"
-                name="hasOtherPets"
-                checked={form.hasOtherPets}
-                onChange={handleChange}
-              />
-              Tengo otras mascotas
-            </label>
+                <label className="flex items-center gap-2 text-gray-600">
+                  <input
+                    type="checkbox"
+                    name="hasOtherPets"
+                    checked={form.hasOtherPets}
+                    onChange={handleChange}
+                  />
+                  Tengo otras mascotas
+                </label>
+              </>
+            )}
+
+            {!isAdopter && (
+              <div className="rounded-2xl bg-purple-50 p-4 text-sm text-purple-800">
+                Tu cuenta tendrá acceso al panel para publicar mascotas, revisar solicitudes recibidas y ver tu historial.
+              </div>
+            )}
 
             <button
+              type="submit"
               disabled={mutation.isPending}
               className="rounded-xl bg-purple-600 py-3 font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
             >

@@ -3,6 +3,7 @@ import PetsPage from "../pages/catalog/PetsPage";
 import PetDetailPage from "../pages/catalog/PetDetailPage";
 import AdoptionFormPage from "../pages/adoption/AdoptionFormPage";
 import AdoptionSuccessPage from "../pages/adoption/AdoptionSuccessPage";
+import AdoptionHistoryPage from "../pages/adoption/AdoptionHistoryPage";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import MyRequestsPage from "../pages/adoption/MyRequestsPage";
@@ -12,9 +13,34 @@ import PetFormPage from "../pages/admin/PetFormPage";
 import PetImagesPage from "../pages/admin/PetImagesPage";
 import { useAuthStore } from "../store/authStore";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import ManageUsersRoles from "../pages/admin/ManageUsersRoles";
+import PublisherPetsPage from "../pages/publisher/PublisherPetsPage";
+import PublisherPetCreatePage from "../pages/publisher/PublisherPetCreatePage";
+import PublisherRequestsPage from "../pages/publisher/PublisherRequestsPage";
+import PublisherHistoryPage from "../pages/publisher/PublisherHistoryPage";
+import ProfilePage from "../pages/profile/ProfilePage";
+import AdminBreedsPage from "../pages/admin/AdminBreedsPage";
+import AdminSpeciesPage from "../pages/admin/AdminSpeciesPage";
+import AdminRecommendationsPage from "../pages/admin/AdminRecommendationsPage";
+import SendRecommendationPage from "../pages/recommendations/SendRecommendationPage";
+
+function getRoleName(user) {
+  return user?.roleName?.toLowerCase();
+}
 
 function isAdminUser(user) {
-  return user?.roleName === "Administrador" || user?.roleName === "admin";
+  const role = getRoleName(user);
+  return role === "admin" || role === "administrador";
+}
+
+function isAdopterUser(user) {
+  const role = getRoleName(user);
+  return role === "adopter" || role === "adoptante";
+}
+
+function isPublisherUser(user) {
+  const role = getRoleName(user);
+  return role === "publicador";
 }
 
 function AdminRoute({ children }) {
@@ -31,11 +57,30 @@ function AdopterRoute({ children }) {
 
   if (!user) return <Navigate to="/login" replace />;
   if (isAdminUser(user)) return <Navigate to="/admin/dashboard" replace />;
+  if (!isAdopterUser(user)) return <Navigate to="/pets" replace />;
 
   return children;
 }
 
-function PublicAdopterOnly({ children }) {
+function PublisherRoute({ children }) {
+  const user = useAuthStore((state) => state.user);
+
+  if (!user) return <Navigate to="/login" replace />;
+  if (isAdminUser(user)) return <Navigate to="/admin/dashboard" replace />;
+  if (!isPublisherUser(user)) return <Navigate to="/pets" replace />;
+
+  return children;
+}
+
+function AuthenticatedRoute({ children }) {
+  const user = useAuthStore((state) => state.user);
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  return children;
+}
+
+function PublicRoute({ children }) {
   const user = useAuthStore((state) => state.user);
 
   if (isAdminUser(user)) return <Navigate to="/admin/dashboard" replace />;
@@ -50,32 +95,50 @@ export default function AppRouter() {
         <Route
           path="/"
           element={
-            <PublicAdopterOnly>
+            <PublicRoute>
               <PetsPage />
-            </PublicAdopterOnly>
+            </PublicRoute>
           }
         />
 
         <Route
           path="/pets"
           element={
-            <PublicAdopterOnly>
+            <PublicRoute>
               <PetsPage />
-            </PublicAdopterOnly>
+            </PublicRoute>
           }
         />
 
         <Route
           path="/pets/:id"
           element={
-            <PublicAdopterOnly>
+            <PublicRoute>
               <PetDetailPage />
-            </PublicAdopterOnly>
+            </PublicRoute>
           }
         />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        <Route
+          path="/profile"
+          element={
+            <AuthenticatedRoute>
+              <ProfilePage />
+            </AuthenticatedRoute>
+          }
+        />
+
+        <Route
+          path="/recommendations"
+          element={
+            <AuthenticatedRoute>
+              <SendRecommendationPage />
+            </AuthenticatedRoute>
+          }
+        />
 
         <Route
           path="/adopt/:petId"
@@ -101,6 +164,51 @@ export default function AppRouter() {
             <AdopterRoute>
               <MyRequestsPage />
             </AdopterRoute>
+          }
+        />
+
+        <Route
+          path="/adoption-history"
+          element={
+            <AdopterRoute>
+              <AdoptionHistoryPage />
+            </AdopterRoute>
+          }
+        />
+
+        <Route
+          path="/publisher/pets"
+          element={
+            <PublisherRoute>
+              <PublisherPetsPage />
+            </PublisherRoute>
+          }
+        />
+
+        <Route
+          path="/publisher/pets/new"
+          element={
+            <PublisherRoute>
+              <PublisherPetCreatePage />
+            </PublisherRoute>
+          }
+        />
+
+        <Route
+          path="/publisher/requests"
+          element={
+            <PublisherRoute>
+              <PublisherRequestsPage />
+            </PublisherRoute>
+          }
+        />
+
+        <Route
+          path="/publisher/history"
+          element={
+            <PublisherRoute>
+              <PublisherHistoryPage />
+            </PublisherRoute>
           }
         />
 
@@ -158,8 +266,44 @@ export default function AppRouter() {
           }
         />
 
+        <Route
+          path="/admin/users-roles"
+          element={
+            <AdminRoute>
+              <ManageUsersRoles />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/breeds"
+          element={
+            <AdminRoute>
+              <AdminBreedsPage />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/species"
+          element={
+            <AdminRoute>
+              <AdminSpeciesPage />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/recommendations"
+          element={
+            <AdminRoute>
+              <AdminRecommendationsPage />
+            </AdminRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
-  );  
+  );
 }

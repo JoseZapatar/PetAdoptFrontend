@@ -14,7 +14,6 @@ function getAge(pet) {
 
   const birthDate = new Date(pet.birthDate);
   const today = new Date();
-
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
 
@@ -26,18 +25,18 @@ function getAge(pet) {
 }
 
 export default function PetCard({ pet }) {
-  const id = pet.id || pet.petId;
+  const id = pet.id;
   const name = getPetName(pet);
 
   return (
     <article className="overflow-hidden rounded-3xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl">
       <img
-        src={getPetImageUrl(pet)}
+        src={getPetImageUrl(pet.primaryImageId)}
         alt={name}
         onError={(event) => {
           event.currentTarget.src = "/placeholder-pet.jpg";
         }}
-        className="h-56 w-full object-cover"
+        className="h-52 w-full object-cover sm:h-56"
       />
 
       <div className="p-5">
@@ -45,17 +44,13 @@ export default function PetCard({ pet }) {
           {pet.statusName || "Disponible"}
         </span>
 
-        <h3 className="mt-4 text-2xl font-bold text-gray-900">{name}</h3>
+        <h3 className="mt-4 line-clamp-2 text-xl font-bold text-gray-900 sm:text-2xl">
+          {name}
+        </h3>
 
-        <p className="mt-2 text-gray-500">
-          {pet.speciesName || "Especie"} {pet.breedName ? `• ${pet.breedName}` : ""}
+        <p className="mt-2 text-sm text-gray-500 sm:text-base">
+          {pet.speciesName} {pet.breedName ? `• ${pet.breedName}` : ""}
         </p>
-
-        {pet.description && (
-          <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-gray-500">
-            {pet.description}
-          </p>
-        )}
 
         <div className="mt-4 flex flex-wrap gap-2">
           {pet.sizeName && (
@@ -77,7 +72,7 @@ export default function PetCard({ pet }) {
 
         <Link
           to={`/pets/${id}`}
-          className="mt-5 block rounded-xl bg-purple-600 py-3 text-center font-semibold text-white hover:bg-purple-700"
+          className="mt-5 block rounded-xl bg-purple-600 py-3 text-center font-semibold text-white transition hover:bg-purple-700"
         >
           Ver más
         </Link>

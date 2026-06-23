@@ -21,18 +21,28 @@ export default function PetDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-
-        <main className="mx-auto max-w-6xl px-6 py-10">
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
           <PetDetailSkeleton />
           <ReviewsSkeleton />
         </main>
-
         <Footer />
       </div>
     );
   }
 
-  if (error || !data) return <p className="p-10">Mascota no encontrada</p>;
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+          <div className="rounded-3xl bg-white p-8 text-center shadow">
+            Mascota no encontrada.
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const isAvailable = data.statusName?.toLowerCase() === "disponible";
 
@@ -40,24 +50,24 @@ export default function PetDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-0 lg:grid-cols-2">
             <img
-              src={getPetImageUrl(data)}
+              src={getPetImageUrl(data.primaryImageId)}
               alt={data.name}
               onError={(event) => {
                 event.currentTarget.src = "/placeholder-pet.jpg";
               }}
-              className="h-full min-h-[420px] w-full object-cover"
+              className="h-72 w-full object-cover sm:h-96 lg:h-full lg:min-h-[420px]"
             />
 
-            <div className="p-8">
+            <div className="p-5 sm:p-8">
               <span className="rounded-full bg-purple-100 px-4 py-1 text-sm font-semibold text-purple-700">
                 {data.statusName}
               </span>
 
-              <h1 className="mt-4 text-4xl font-bold text-gray-900">
+              <h1 className="mt-4 text-3xl font-bold text-gray-900 sm:text-4xl">
                 {data.name}
               </h1>
 
@@ -65,7 +75,7 @@ export default function PetDetailPage() {
                 {data.speciesName} {data.breedName ? `• ${data.breedName}` : ""}
               </p>
 
-              <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Info label="Tamaño" value={data.sizeName} />
                 <Info label="Sexo" value={data.gender} />
                 <Info label="Estado" value={data.statusName} />
@@ -82,24 +92,6 @@ export default function PetDetailPage() {
               <p className="mt-3 leading-relaxed text-gray-600">
                 {data.description || "No hay descripción disponible."}
               </p>
-
-              {(data.isVaccinated || data.isSterilized || data.isDewormed || data.medicalNotes) && (
-                <div className="mt-6 rounded-2xl bg-gray-50 p-5">
-                  <h3 className="font-bold text-gray-900">Salud</h3>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {data.isVaccinated && <Badge>Vacunado</Badge>}
-                    {data.isSterilized && <Badge>Esterilizado</Badge>}
-                    {data.isDewormed && <Badge>Desparasitado</Badge>}
-                  </div>
-
-                  {data.medicalNotes && (
-                    <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                      {data.medicalNotes}
-                    </p>
-                  )}
-                </div>
-              )}
 
               {isAvailable ? (
                 <Link
@@ -119,6 +111,8 @@ export default function PetDetailPage() {
 
         <ReviewsSection petId={data.id} />
       </main>
+
+      <Footer />
     </div>
   );
 }
@@ -127,31 +121,23 @@ function Info({ label, value }) {
   return (
     <div className="rounded-2xl bg-gray-50 p-4">
       <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-1 font-bold text-gray-900">{value || "N/A"}</p>
+      <p className="mt-1 break-words font-bold text-gray-900">{value || "N/A"}</p>
     </div>
-  );
-}
-
-function Badge({ children }) {
-  return (
-    <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
-      {children}
-    </span>
   );
 }
 
 function PetDetailSkeleton() {
   return (
     <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="h-[420px] w-full animate-pulse bg-gray-200" />
+      <div className="grid gap-0 lg:grid-cols-2">
+        <div className="h-72 w-full animate-pulse bg-gray-200 sm:h-96 lg:h-[420px]" />
 
-        <div className="p-8">
+        <div className="p-5 sm:p-8">
           <div className="h-7 w-28 animate-pulse rounded-full bg-gray-200" />
           <div className="mt-5 h-10 w-2/3 animate-pulse rounded bg-gray-200" />
           <div className="mt-3 h-5 w-1/2 animate-pulse rounded bg-gray-200" />
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="rounded-2xl bg-gray-50 p-4">
                 <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
@@ -177,7 +163,7 @@ function PetDetailSkeleton() {
 
 function ReviewsSkeleton() {
   return (
-    <div className="mt-10 rounded-3xl bg-white p-8 shadow-lg">
+    <div className="mt-10 rounded-3xl bg-white p-5 shadow-lg sm:p-8">
       <div className="h-7 w-48 animate-pulse rounded bg-gray-200" />
 
       <div className="mt-6 space-y-4">
